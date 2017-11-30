@@ -7,10 +7,16 @@ class Pype9 < Formula
 
   include Language::Python::Virtualenv
 
-  depends_on :python3 => :optional
+  depends_on :python => :build
+  depends_on :python3 => [:optional, :build]
+
+  # Dependencies of various packages
+  depends_on "libxml2" => :build
+  depends_on "libxslt" => :build
   depends_on :mpi => :recommended
   depends_on "hdf5" => :build
 
+  # Get options to pass to simulator dependencies
   sim_requires = []
   sim_requires << "with-python3" if build.with? "python3"
   sim_requires << "with-mpi" if build.with? "mpi"
@@ -91,8 +97,8 @@ class Pype9 < Formula
   end
 
   resource "ninemlcatalog" do
-    url "https://files.pythonhosted.org/packages/f4/1d/90ff1ccac61e32748f46539bb7d7233dd66dbb1a8f561faa445d5b212c35/ninemlcatalog-0.1.tar.gz"
-    sha256 "1d6613f5032781a289dfa9f7e9d74337724dca919841ee7ba84baa8c8e498500"
+    url "https://files.pythonhosted.org/packages/9c/b1/d045d50d996255983ca3717b27a7bc21af21edaa705b226d422df247d26e/ninemlcatalog-0.1.1.tar.gz"
+    sha256 "3726728f0911bdb806cecd953f0fae1d60d8848addecfeb3f90486b682730db6"
   end
 
   resource "numpy" do
@@ -108,11 +114,6 @@ class Pype9 < Formula
   resource "PyNN" do
     url "https://files.pythonhosted.org/packages/ea/c9/ae4a6ac5a6007b85a0e35cce9bd34283eb577606e1f0c15443f575fba630/PyNN-0.9.1.tar.gz"
     sha256 "bbc60fea3235427191feb2daa0e2fa07eb1c3946104c068ac8a2a0501263b0b1"
-  end
-
-  resource "pype9" do
-    url "https://files.pythonhosted.org/packages/76/09/28f22b2804dfa0896be38c2aaeb44628668c2d5a0efa6c5c28461d04eb3e/pype9-0.2.tar.gz"
-    sha256 "c4942701e3729e96e2984e9cd828bd043a4f57ae749ee5bacfa27c6380966a64"
   end
 
   resource "PyYAML" do
@@ -182,19 +183,15 @@ class Pype9 < Formula
     sha256 "1e450a4a4c53bf197ad6402c564b9f7a53539385918ef8f12bdf430a61036590"
   end
 
-  # For testing
-
-  resource "nose" do
-    url "https://files.pythonhosted.org/packages/58/a5/0dc93c3ec33f4e281849523a5a913fa1eea9a3068acfa754d44d88107a44/nose-1.3.7.tar.gz"
-    sha256 "f1bffef9cbc82628f6e7d7b40d7e255aefaa1adb6a1b1d26c69a8b79e6208a98"
-  end
-
   def install
-    virtualenv_install_with_resources
+    venv = virtualenv_create(libexec)
+    venv.pip_install resources
+    venv.pip_install_and_link "#{buildpath}[plot]"
   end
 
   test do
-    system "nosetests", "#{build_path}/test/unittests"
+    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "nest" "10.0", "0.1"
+    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "neuron" "10.0", "0.1"
   end
 
 end
