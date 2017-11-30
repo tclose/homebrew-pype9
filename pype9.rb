@@ -7,11 +7,9 @@ class Pype9 < Formula
 
   include Language::Python::Virtualenv
 
-  option "no-venv", "Installs the Pype9 Python package and its dependencies into the Python path. NB: Pip must be installed for the Python to be used"
-
   depends_on :python3 => :optional
   depends_on :mpi => :recommended
-  depends_on "hdf5"
+  depends_on "hdf5" => :build
 
   sim_requires = []
   sim_requires << "with-python3" if build.with? "python3"
@@ -192,15 +190,7 @@ class Pype9 < Formula
   end
 
   def install
-    if build.with? "no-venv"
-      # Install package with dependencies
-      pip_exec = build.with? "python3" ? "pip3" : "pip"
-      system pip_exec, "install",
-             "-v", "--no-deps", "--no-binary", ":all:",
-             "--ignore-installed", build_path, *resources
-    else
-      virtualenv_install_with_resources
-    end
+    virtualenv_install_with_resources
   end
 
   test do
