@@ -13,16 +13,29 @@ class Pype9 < Formula
   # Dependencies of various packages
   depends_on "libxml2" => :build
   depends_on "libxslt" => :build
+  depends_on "freetype" => :build
+  depends_on "pkg-config" => :build
   depends_on :mpi => :recommended
   depends_on "hdf5" => :build
 
   # Get options to pass to simulator dependencies
-  sim_requires = []
-  sim_requires << "with-python3" if build.with? "python3"
-  sim_requires << "with-mpi" if build.with? "mpi"
+  nest_requires = []
+  neuron_requires = []
 
-  depends_on "neuron" => sim_requires
-  depends_on "nest" => sim_requires
+  if build.with? "mpi"
+      nest_requires << "with-mpi"
+      neuron_requires << "with-mpi"
+  end
+
+  if build.with? "python3"
+      nest_requires << "with-python3"
+      neuron_requires << "with-python3"
+  else
+      nest_requires << "with-python"
+  end
+
+  depends_on "neuron" => neuron_requires
+  depends_on "nest" => nest_requires
 
   # Python dependencies
 
@@ -79,7 +92,7 @@ class Pype9 < Formula
   resource "mpi4py" do
     url "https://files.pythonhosted.org/packages/31/27/1288918ac230cc9abc0da17d84d66f3db477757d90b3d6b070d709391a15/mpi4py-3.0.0.tar.gz"
     sha256 "b457b02d85bdd9a4775a097fac5234a20397b43e073f14d9e29b6cd78c68efd7"
-  end
+  end if build.with? "mpi"
 
   resource "mpmath" do
     url "https://files.pythonhosted.org/packages/7a/05/b3d1472885d8dc0606936ea5da0ccb1b4785682e78ab15e34ada24aea8d5/mpmath-1.0.0.tar.gz"
@@ -97,8 +110,8 @@ class Pype9 < Formula
   end
 
   resource "ninemlcatalog" do
-    url "https://files.pythonhosted.org/packages/9c/b1/d045d50d996255983ca3717b27a7bc21af21edaa705b226d422df247d26e/ninemlcatalog-0.1.1.tar.gz"
-    sha256 "3726728f0911bdb806cecd953f0fae1d60d8848addecfeb3f90486b682730db6"
+    url "https://files.pythonhosted.org/packages/3b/b1/f0cd194cbbf78394eb9ca2980da22f2a9af1418ea1d8c3e5be4b22bdebd9/ninemlcatalog-0.1.2.tar.gz"
+    sha256 "856943c1f547cc50d674694ba5b166d6ea744400b72db53e9a461f19758741e8"
   end
 
   resource "numpy" do
@@ -190,8 +203,8 @@ class Pype9 < Formula
   end
 
   test do
-    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "nest" "10.0", "0.1"
-    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "neuron" "10.0", "0.1"
+    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "nest", "10.0", "0.1"
+    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "neuron", "10.0", "0.1"
   end
 
 end
