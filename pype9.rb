@@ -197,14 +197,22 @@ class Pype9 < Formula
   end
 
   def install
-    venv = virtualenv_create(libexec)
+    if build.with? "python3"
+      python_exec = "python3"
+    else
+      python_exec = "python"
+    end
+    venv = virtualenv_create(libexec, python=python_exec)
     venv.pip_install resources
     venv.pip_install_and_link "#{buildpath}[plot]"
   end
 
   test do
-    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "nest", "10.0", "0.1"
-    system "pype9", "simulate", "catalog://neuron/Izhikevich#SampleIzhikevichFastSpiking", "neuron", "10.0", "0.1"
+    system "pype9", "convert", "catalog://neuron/Izhikevich", "./izhi.yml"
+    system "pype9", "simulate", "./izhi.yml#SampleIzhikevichFastSpiking", "nest", "10.0", "0.1", "--record", "V", "v-nest.neo.pkl", "--init_regime", "subthreshold"
+    system "pype9", "simulate", "./izhi.yml#SampleIzhikevichFastSpiking", "neuron", "10.0", "0.1", "--record", "U", "u-neuron.neo.pkl", "--init_regime", "subthreshold"
+    system "pype9", "plot", "v-nest.neo.pkl", "--hide", "--save", "v-nest.png"
+    system "pype9", "plot", "u-neuron.neo.pkl", "--hide", "--save", "u-neuron.png"
   end
 
 end
