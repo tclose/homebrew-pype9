@@ -7,6 +7,8 @@ class Pype9 < Formula
 
   include Language::Python::Virtualenv
 
+  option "with-inter-views", "Installs Neuron dependency with support for 'inter-views'. Requires X11 is installed"
+
   depends_on :python => :build
   depends_on :python3 => [:optional, :build]
 
@@ -32,6 +34,10 @@ class Pype9 < Formula
       neuron_requires << "with-python3"
   else
       nest_requires << "with-python"
+  end
+
+  if build.without? "inter-views"
+    neuron_requires << "without-inter-views"
   end
 
   depends_on "neuron" => neuron_requires
@@ -191,12 +197,15 @@ class Pype9 < Formula
     sha256 "70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
   end
 
-  resource "subprocess32" do
-    url "https://files.pythonhosted.org/packages/b8/2f/49e53b0d0e94611a2dc624a1ad24d41b6d94d0f1b0a078443407ea2214c2/subprocess32-3.2.7.tar.gz"
-    sha256 "1e450a4a4c53bf197ad6402c564b9f7a53539385918ef8f12bdf430a61036590"
+  if build.without? "python3"
+    resource "subprocess32" do
+      url "https://files.pythonhosted.org/packages/b8/2f/49e53b0d0e94611a2dc624a1ad24d41b6d94d0f1b0a078443407ea2214c2/subprocess32-3.2.7.tar.gz"
+      sha256 "1e450a4a4c53bf197ad6402c564b9f7a53539385918ef8f12bdf430a61036590"
+    end
   end
 
   def install
+    ENV.delete("PYTHONPATH")
     if build.with? "python3"
       python_exec = "python3"
     else
