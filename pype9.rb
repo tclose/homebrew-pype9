@@ -7,37 +7,26 @@ class Pype9 < Formula
 
   include Language::Python::Virtualenv
 
-  option "with-inter-views", "Installs Neuron dependency with support for 'inter-views'. Requires X11 is installed"
-
-  depends_on :python => :build
-  depends_on :python3 => [:optional, :build]
+  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on :python3 => [:optional]
 
   # Dependencies of various packages
   depends_on "libxml2" => :build
   depends_on "libxslt" => :build
   depends_on "freetype" => :build
   depends_on "pkg-config" => :build
-  depends_on :mpi => :recommended
   depends_on "hdf5" => :build
+  depends_on :mpi => :optional
 
   # Get options to pass to simulator dependencies
-  nest_requires = []
-  neuron_requires = []
+  sim_requires = []
 
   if build.with? "mpi"
-      nest_requires << "with-mpi"
-      neuron_requires << "with-mpi"
+      sim_requires << "with-mpi"
   end
 
   if build.with? "python3"
-      nest_requires << "with-python3"
-      neuron_requires << "with-python3"
-  else
-      nest_requires << "with-python"
-  end
-
-  if build.without? "inter-views"
-    neuron_requires << "without-inter-views"
+      sim_requires << "with-python3"
   end
 
   depends_on "neuron" => neuron_requires
